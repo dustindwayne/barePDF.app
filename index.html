@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+ <!DOCTYPE html>
+ <html lang="en">
+  <head>
+   <!-- Core Metadata -->
+   <meta charset="utf-8"/>
+   <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+   <title>
+    BarePDF â Simple client-side PDF merger &amp; splitter (no upload, no tracking)
+   </title>
+   <meta content="BarePDF is a privacy-first, client-side PDF tool for merging, splitting, reordering, and rotating â 100% local, no uploads, no tracking." name="description"/>
+   <meta content="BarePDF" name="author"/>
+   <meta content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" name="robots"/>
+   <meta content="en" http-equiv="Content-Language"/>
+   <meta content="#0f0f0f" name="theme-color"/>
+   <link href="./index.html" rel="canonical"/>
+   <!-- Open Graph -->
+   <meta content="website" property="og:type"/>
+   <meta content="BarePDF â Merge &amp; Split PDFs Privately" property="og:title"/>
+   <meta content="Fast, private, 100% client-side PDF splitter and merger. No uploads, no ads, no tracking â ever." property="og:description"/>
+   <meta content="https://barepdf.app/" property="og:url"/>
+   <meta content="BarePDF" property="og:site_name"/>
+   <meta content="https://barepdf.app/barepdf.webp" property="og:image"/>
+   <meta content="BarePDF â private client-side PDF merger and splitter" property="og:image:alt"/>
+   <meta content="en_US" property="og:locale"/>
+   <meta content="2025-01-01T00:00:00Z" property="og:updated_time"/>
+   <!-- Twitter Card -->
+   <meta content="summary_large_image" name="twitter:card"/>
+   <meta content="BarePDF â Merge &amp; Split PDFs Privately" name="twitter:title"/>
+   <meta content="Private PDF merger &amp; splitter â 100% client-side, no upload or tracking." name="twitter:description"/>
+   <meta content="https://barepdf.app/barepdf.webp" name="twitter:image"/>
+   <meta content="BarePDF â private client-side PDF merger and splitter" name="twitter:image:alt"/>
+   <!-- PWA Manifest (recommended for Google signals) -->
+   <link href="./manifest.json" rel="manifest"/>
+   <!-- Structured Data -->
+   <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "BarePDF",
+    "operatingSystem": "Web Browser",
+    "applicationCategory": "UtilityApplication",
+    "description": "A private, client-side PDF merger, splitter, and page editor that runs entirely in your browser. No uploads, no ads, no tracking.",
+    "url": "https://barepdf.app/",
+    "softwareVersion": "1.0.0",
+    "image": "https://barepdf.app/barepdf.webp",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "publisher": { "@type": "Organization", "name": "BarePDF" }
+  }
+   </script>
+   <!-- Icons & Styles -->
+   <link href="./barepdf.webp" rel="icon" type="image/webp"/>
+   <link href="./style.css" rel="stylesheet"/>
+   <!-- Libraries -->
+   <script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
+   </script>
+   <script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js">
+   </script>
+   <script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js">
+   </script>
+   <script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js">
+   </script>
+   <script defer="" src="./app.js">
+   </script>
+  </head>
+  <body>
+   <!-- Info Button -->
+   <button class="info-btn" id="infoBtn" title="How to use">
+    <svg aria-hidden="true" viewbox="0 0 40 40" width="36px">
+     <circle cx="20" cy="20" fill="none" r="15" stroke-width="2">
+     </circle>
+     <text font-family="Montserrat" font-size="18px" font-weight="600" text-anchor="middle" x="20" y="26">
+      i
+     </text>
+    </svg>
+   </button>
+   <!-- Full-page Dropzone -->
+   <div class="dropzone" id="dropzone">
+    <p>
+     Drop PDF here or click to select
+    </p>
+    <input accept="application/pdf" hidden="" id="fileInput" type="file"/>
+   </div>
+   <!-- Action Modal -->
+   <div class="modal hidden" id="modal">
+    <div class="modal-content">
+     <canvas id="previewCanvas">
+     </canvas>
+     <p>
+      Select an action for this file:
+     </p>
+     <div class="modal-actions">
+      <button id="splitBtn">
+       Split / Edit
+      </button>
+      <button id="mergeBtn">
+       Merge PDFs
+      </button>
+     </div>
+     <button class="close-btn" id="closeModal">
+      Cancel
+     </button>
+    </div>
+   </div>
+   <!-- Merge Modal -->
+   <div class="modal hidden" id="mergeModal">
+    <div class="modal-content merge-content">
+     <h3>
+      Select PDFs to Merge
+     </h3>
+     <div class="merge-list" id="mergeList">
+     </div>
+     <div class="merge-actions">
+      <button id="addMoreBtn">
+       + Add Another
+      </button>
+      <button id="mergeDoneBtn">
+       Done
+      </button>
+     </div>
+     <div class="merge-options">
+      <label>
+       <input id="aggressiveCompress" type="checkbox"/>
+       Reduce file size (slower)
+      </label>
+     </div>
+     <button class="close-btn" id="closeMerge">
+      Cancel
+     </button>
+    </div>
+   </div>
+   <!-- Save As Modal -->
+   <div class="modal hidden" id="saveAsModal">
+    <div class="modal-content small-content">
+     <h3>
+      Save As
+     </h3>
+     <input id="saveFilename" spellcheck="false" type="text" value="document.pdf">
+      <div class="modal-actions">
+       <button id="confirmSave">
+        Save
+       </button>
+       <button class="close-btn" id="cancelSave">
+        Cancel
+       </button>
+      </div>
+     </input>
+    </div>
+   </div>
+   <!-- Info Modal -->
+   <div class="modal hidden" id="infoModal">
+    <div class="modal-content info-content">
+     <h2>
+      How to Use
+      <span class="highlight">
+       BarePDF
+      </span>
+     </h2>
+     <div class="info-steps">
+      <div class="step">
+       <span class="step-icon">
+        ð
+       </span>
+       <div class="step-text">
+        <strong>
+         Drop
+        </strong>
+        or select one or more PDF files to begin.
+       </div>
+      </div>
+      <div class="step">
+       <span class="step-icon">
+        âï¸
+       </span>
+       <div class="step-text">
+        <strong>
+         Split / Edit
+        </strong>
+        lets you reorder, rotate, or delete pages.
+       </div>
+      </div>
+      <div class="step">
+       <span class="step-icon">
+        â
+       </span>
+       <div class="step-text">
+        <strong>
+         Merge
+        </strong>
+        combines multiple PDFs into one document.
+       </div>
+      </div>
+      <div class="step">
+       <span class="step-icon">
+        ð§
+       </span>
+       <div class="step-text">
+        Everything runs
+        <strong>
+         100% locally
+        </strong>
+        â no uploads or tracking.
+       </div>
+      </div>
+     </div>
+     <div class="info-footer">
+      <p class="tagline">
+       Private Â· Fast Â· Reliable
+      </p>
+      <button class="close-btn" id="closeInfo">
+       Got it
+      </button>
+     </div>
+    </div>
+   </div>
+   <!-- Thumbnails Container -->
+   <div class="thumbs" id="thumbs">
+   </div>
+   <!-- Tooltip -->
+   <div class="tooltip hidden" id="tooltip">
+    ð¡ Tip: Drag pages to reorder them
+   </div>
+   <!-- Footer -->
+   <footer class="bottom-bar">
+    <div class="left-info">
+     100% client-side Â· No upload Â· No tracking.
+    </div>
+    <div class="right-brand">
+     <svg class="brand-title" clip-rule="evenodd" fill-rule="evenodd" image-rendering="optimizeQuality" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" viewbox="0 0 21.7 25.77" width="45px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+      <rect fill="none" height="25.18" rx=".86" ry=".86" stroke="#fefefe" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="2.6131" stroke-width=".6" width="21.1" x=".3" y=".3">
+      </rect>
+      <path d="M3.68 23.87H2.57c-.17 0-.25-.08-.25-.25v-4.63c0-.17.08-.26.25-.26h2.19c.43 0 .77.06 1.02.17.24.12.42.28.52.49s.15.46.15.73v.92c0 .27-.05.52-.15.73s-.28.37-.52.49c-.25.11-.59.17-1.02.17h-.82v1.19c0 .17-.09.25-.26.25m.24-3.8v1.08h.65c.14 0 .23-.04.27-.11s.06-.15.06-.25v-.37c0-.1-.02-.18-.06-.25s-.13-.1-.27-.1zm5.94 3.8H7.45c-.17 0-.26-.08-.26-.25v-4.63c0-.17.09-.26.26-.26h2.41c.6 0 1.04.12 1.33.36.28.24.42.6.42 1.1v2.23c0 .49-.14.86-.42 1.1-.29.24-.73.35-1.33.35m-1.05-3.78v2.43h.85c.23 0 .34-.11.34-.35v-1.73c0-.23-.11-.35-.34-.35zm5.08 3.78h-1.11c-.17 0-.26-.08-.26-.25v-4.63c0-.17.09-.26.26-.26h3.19c.17 0 .25.09.25.26v.85c0 .17-.08.25-.25.25h-1.83v.75h1.25c.17 0 .26.08.26.26v.85c0 .17-.09.26-.26.26h-1.25v1.41c0 .17-.08.25-.25.25M2.83 15.7c.08-.14.2-.25.35-.34.16-.09.34-.14.54-.14q.315 0 .57.15c.17.11.31.25.4.43.1.18.15.4.15.64s-.05.45-.15.64c-.09.19-.23.33-.4.44q-.255.15-.57.15c-.21 0-.39-.04-.54-.13-.16-.09-.27-.21-.35-.34v.43h-.4v-3.2h.4zm1.61.74c0-.18-.04-.34-.11-.47s-.17-.23-.29-.3-.26-.11-.41-.11c-.14 0-.27.04-.4.11-.12.07-.22.17-.29.31-.07.13-.11.29-.11.46 0 .18.04.34.11.47.07.14.17.24.29.31.13.07.26.11.4.11.15 0 .29-.04.41-.11s.22-.17.29-.31c.07-.13.11-.29.11-.47m.77 0c0-.24.05-.46.15-.64s.23-.32.4-.43c.18-.1.37-.15.58-.15s.39.05.54.14.27.2.34.33v-.43h.4v2.37h-.4v-.44c-.08.14-.19.25-.35.35-.15.09-.33.13-.54.13q-.315 0-.57-.15c-.17-.11-.3-.25-.4-.44s-.15-.4-.15-.64m2.01 0c0-.18-.04-.33-.11-.46-.07-.14-.17-.24-.29-.31s-.26-.11-.4-.11c-.15 0-.29.04-.41.11s-.21.17-.29.3c-.07.13-.1.29-.1.47s.03.34.1.47c.08.14.17.24.29.31s.26.11.41.11c.14 0 .28-.04.4-.11s.22-.17.29-.31c.07-.13.11-.29.11-.47m1.46-.79c.07-.14.17-.24.3-.32.12-.07.28-.11.46-.11v.41h-.1c-.44 0-.66.23-.66.71v1.29h-.39v-2.37h.39zm3.38.71c0 .07 0 .15-.01.23h-1.9c.02.24.1.42.24.55.15.13.33.2.53.2.17 0 .32-.04.43-.12s.19-.19.24-.32h.43c-.07.23-.2.41-.39.56-.19.14-.42.21-.71.21q-.33 0-.6-.15c-.18-.1-.32-.24-.42-.43s-.15-.4-.15-.65c0-.24.05-.46.15-.64.1-.19.23-.33.41-.43s.38-.15.61-.15q.345 0 .6.15c.17.1.31.23.4.4.1.18.14.37.14.59m-.4-.09c0-.15-.04-.27-.1-.38-.07-.11-.16-.19-.27-.25-.12-.06-.24-.08-.38-.08-.2 0-.37.06-.51.19-.14.12-.22.3-.24.52z" fill="#fefefe" fill-rule="nonzero">
+      </path>
+     </svg>
+     <p class="brand-tagline">
+      Simple Â· Private Â· Powerful
+     </p>
+    </div>
+   </footer>
+   <!-- Buy Me a Coffee (optional, can remove) -->
+   <a aria-label="Support BarePDF on Buy Me a Coffee" class="bmc-circle" href="https://buymeacoffee.com/dustindwayne" rel="noopener noreferrer" target="_blank">
+    <svg aria-hidden="true" class="bmc-ring" viewbox="0 0 100 100">
+     <defs>
+      <path d="M50,50 m -38,0 a 38,38 0 1,1 76,0 a 38,38 0 1,1 -76,0" id="bmc-textpath">
+      </path>
+     </defs>
+     <text class="bmc-text">
+      <textpath href="#bmc-textpath">
+       BUY ME A COFFEE • BUY ME A COFFEE •
+      </textpath>
+     </text>
+    </svg>
+    <div class="bmc-center">
+     <svg aria-hidden="true" class="bmc-cup" fill="none" viewbox="0 0 20 30" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10.1 13.12a8 8 0 0 1-3.54.94q-.9 0-1.79-.26l1 10.66q.07.69.55 1.17.5.46 1.16.47s1.42.07 1.89.07c.5 0 2.03-.07 2.03-.07.43 0 .85-.17 1.16-.47.32-.3.51-.72.55-1.17l1.07-11.78a4 4 0 0 0-1.5-.28c-.95 0-1.7.33-2.58.72" fill="#fd0">
+      </path>
+      <path d="m18.8 7.6-.16-.8c-.13-.7-.44-1.37-1.14-1.62-.22-.09-.47-.12-.64-.3s-.23-.42-.27-.67l-.21-1.34c-.07-.38-.12-.82-.3-1.17-.21-.47-.67-.75-1.12-.93q-.36-.14-.72-.23a17 17 0 0 0-3.5-.5q-2.1-.11-4.21.08c-1.05.1-2.14.22-3.14.6-.36.13-.73.3-1 .59-.34.35-.45.9-.2 1.35.17.32.46.54.78.69q.62.29 1.28.43a27 27 0 0 0 8.92.16c.4-.06.66-.6.54-.99-.14-.45-.52-.63-.95-.56l-.2.03h-.04a25 25 0 0 1-6.68.02l-.13-.01h-.03l-.13-.03q-.41-.06-.83-.15l-.07-.05a.13.13 0 0 1 0-.16L4.72 2l.96-.18q.23-.01.45-.05a28 28 0 0 1 6.2.03l.16.02.1.01q.45.07.9.17c.46.1 1.03.14 1.23.65q.08.25.12.5l.05.22v.01l.32 1.65a.3.3 0 0 1-.13.18l-.1.04h-.07l-.06.02a34 34 0 0 1-1.8.2 40 40 0 0 1-8.95-.21l-.15-.02-.33-.05-1.1-.2a2 2 0 0 0-1.28.2q-.5.29-.77.83c-.18.37-.23.78-.3 1.18-.08.4-.2.84-.16 1.25.1.9.7 1.62 1.56 1.78q1.22.23 2.45.38a44 44 0 0 0 10.47.07.5.5 0 0 1 .45.16.6.6 0 0 1 .16.46l-.09.83-.49 5-.66 6.73c-.05.49-.06.99-.15 1.47a1.7 1.7 0 0 1-1.34 1.38q-1 .24-2 .25l-2.24-.03c-.8 0-1.77-.07-2.39-.69-.54-.54-.61-1.39-.69-2.12l-.29-2.91-.54-5.4-.35-3.49-.01-.17c-.05-.42-.33-.82-.78-.8-.38.01-.81.35-.77.8l.26 2.59.54 5.35.45 4.56.1.88c.16 1.6 1.33 2.45 2.78 2.69.84.14 1.7.17 2.57.19 1.1.01 2.2.06 3.29-.15 1.6-.3 2.8-1.42 2.98-3.15l.15-1.5.48-4.94.54-5.4.24-2.46a.6.6 0 0 1 .14-.33q.13-.15.3-.18c.46-.1.9-.25 1.23-.61.52-.58.62-1.33.44-2.1" fill="#fff">
+      </path>
+     </svg>
+    </div>
+   </a>
+   <!-- SEO text (hidden visually, crawlable) -->
+   <section class="seo-summary">
+    <h2>
+     About BarePDF
+    </h2>
+    <p>
+     <strong>
+      BarePDF
+     </strong>
+     is a completely free web-based PDF utility that merges, splits, reorders, and rotates pages right in your browser. Itâs designed for privacy â your files never leave your device. Whether you need to extract a single page, combine multiple documents, or compress a large file, BarePDF gives you professional-grade tools without ads, accounts, or subscriptions.
+    </p>
+    <h3>
+     Why Choose BarePDF?
+    </h3>
+    <ul>
+     <li>
+      ð 100% client-side â your documents never upload.
+     </li>
+     <li>
+      â¡ Lightning fast and offline-ready.
+     </li>
+     <li>
+      ð¯ Simple, modern interface â no clutter, no confusion.
+     </li>
+     <li>
+      ð§© Works on Windows, macOS, Linux, Android, and iOS.
+     </li>
+    </ul>
+   </section>
+  </body>
+ </html>
+</html>
